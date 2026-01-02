@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adafruit_ssd1305"
+description = "CPython driver for the SSD1305 monochrome OLED display."
+readme = {file = "README.md", content-type = "text/markdown"}
+licence = {file = "LICENSE.md", content-type = "text/markdown"}
+requires-python = ">=3.10"
+authors = [{ name = "artemOP" }]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3"
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Hardware",
+    "Topic :: Utilities",
+    "Topic :: Multimedia :: Video :: Display",
+    "Typing :: Typed"
+]
+
+dynamic = ["version", "dependencies"]
+
+[project.urls]
+"Source" = "https://github.com/artemOP/adafruit_ssd1305"
+
+[tools.setuptools.dynamic]
+dependencies = { file = "requirements.txt" }
+gpio = [
+    "RPi.GPIO>=0.7.1,<1; platform_machine == 'armv7l' or platform_machine == 'aarch64'",
+]
+
+[tool.setuptools]
+packages = ["adafruit_ssd1305"]
+include-package-data = true
+
+[tool.black]
+line-length = 125
+skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+combine_as_imports = true
+combine_star = true
+line_length = 125
+
+[tool.pyright]
+include = ["adafruit_ssd1305"]
+exclude = ["*/__pychache__/*"]
+reportUnnecessaryTypeIgnoreComment = "warning",
+reportUnusedImport = "error",
+pythonVersion = "3.13"
+typeCheckingMode = "standard"
