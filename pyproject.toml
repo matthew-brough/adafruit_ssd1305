@@ -27,8 +27,9 @@ classifiers = [
     "Topic :: Multimedia :: Video :: Display",
     "Typing :: Typed"
 ]
+version = "0.1.0"
 
-dynamic = ["version", "dependencies"]
+dynamic = ["dependencies"]
 
 [project.urls]
 "Source" = "https://github.com/artemOP/adafruit_ssd1305"
