@@ -56,7 +56,7 @@ line_length = 125
 [tool.pyright]
 include = ["adafruit_ssd1305"]
 exclude = ["*/__pychache__/*"]
-reportUnnecessaryTypeIgnoreComment = "warning",
-reportUnusedImport = "error",
+reportUnnecessaryTypeIgnoreComment = "warning"
+reportUnusedImport = "error"
 pythonVersion = "3.13"
 typeCheckingMode = "standard"
