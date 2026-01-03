@@ -145,14 +145,14 @@ class SSD1305:
         return pathlib.Path(__file__).resolve().parent / "fonts"
 
     @font.setter
-    def font(self, font_path: pathlib.Path, font_format: constants.FontType | None = None) -> None:
-        if not font_format:
-            font_format = self._font_format
-        match font_format:
-            case constants.FontType.TTF | constants.FontType.OTF:
-                self._font = ImageFont.truetype(font_path.resolve(), self._font_size)
-            case constants.FontType.BITMAP:
-                self._font = BitmapFont.load(str(font_path.resolve()))
+    def font(self, font_path: pathlib.Path) -> None:
+        if font_path.suffix.lower() in (".ttf", ".otf"):
+            font_format = constants.FontType.TTF if font_path.suffix.lower() == ".ttf" else constants.FontType.OTF
+            self._font = ImageFont.truetype(font_path.resolve(), self._font_size)
+        else:
+            font_format = constants.FontType.BITMAP
+            self._font = BitmapFont.load(str(font_path.resolve()))
+
         self._font_path = font_path
         self._font_format = font_format
 
