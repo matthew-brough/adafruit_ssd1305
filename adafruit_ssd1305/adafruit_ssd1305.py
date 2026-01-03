@@ -12,8 +12,12 @@ try:
 except (ImportError, RuntimeError):
     GPIO = None
 
-import constants
-from bitmap_font import BitmapFont
+try:
+    from . import constants
+    from .bitmap_font import BitmapFont
+except ImportError:
+    import constants
+    from bitmap_font import BitmapFont
 
 if TYPE_CHECKING:
     from types import TracebackType
