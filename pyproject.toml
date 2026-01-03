@@ -43,6 +43,9 @@ gpio = [
 packages = ["adafruit_ssd1305"]
 include-package-data = true
 
+[tool.setuptools.package-data]
+adafruit_ssd1305 = ["fonts/**/*"]
+
 [tool.black]
 line-length = 125
 skip-string-normalization = true
