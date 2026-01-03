@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "adafruit_ssd1305"
 description = "CPython driver for the SSD1305 monochrome OLED display."
 readme = {file = "README.md", content-type = "text/markdown"}
-licence = {file = "LICENSE.md", content-type = "text/markdown"}
+license = {file = "LICENSE.md", content-type = "text/markdown"}
 requires-python = ">=3.10"
 authors = [{ name = "artemOP" }]
 classifiers = [
