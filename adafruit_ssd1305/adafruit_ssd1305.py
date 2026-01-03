@@ -12,7 +12,8 @@ try:
 except (ImportError, RuntimeError):
     GPIO = None
 
-from . import constants
+import constants
+from bitmap_font import BitmapFont
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -36,6 +37,7 @@ class SSD1305:
         reset_pin: int | None = None,
         font_path: pathlib.Path | None = None,
         font_size: int = 8,
+        font_format: constants.FontType = constants.FontType.TTF,
     ) -> None:
         self._width = width
         self._height = height
@@ -45,6 +47,7 @@ class SSD1305:
         self._reset_pin = reset_pin
         self._font_path = font_path
         self._font_size = font_size
+        self._font_format = font_format
 
     def __enter__(self) -> Self:
         self._bus = SMBus(self._bus_id)
@@ -58,8 +61,13 @@ class SSD1305:
 
         if not self._font_path:
             self._font_path = pathlib.Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
+        
+        match self._font_format:
+            case constants.FontType.TTF | constants.FontType.OTF:
+                self._font = ImageFont.truetype(self._font_path.resolve(), self._font_size)
+            case constants.FontType.BITMAP:
+                self._font = BitmapFont.load(str(self._font_path.resolve()))
 
-        self._font = ImageFont.truetype(self._font_path.resolve(), self._font_size)
 
         self.init_display()
         self.fill(constants.Colour.BLACK)
@@ -126,12 +134,23 @@ class SSD1305:
         return self._column_offset
 
     @property
-    def font(self) -> ImageFont.FreeTypeFont:
+    def font(self) -> ImageFont.FreeTypeFont | BitmapFont:
         return self._font
+    
+    def font_format(self) -> constants.FontType:
+        return self._font_format
 
     @font.setter
-    def font(self, font_path: pathlib.Path) -> None:
-        self._font = ImageFont.truetype(font_path.resolve(), self._font_size)
+    def font(self, font_path: pathlib.Path, font_format: constants.FontType | None = None) -> None:
+        if not font_format:
+            font_format = self._font_format
+        match font_format:
+            case constants.FontType.TTF | constants.FontType.OTF:
+                self._font = ImageFont.truetype(font_path.resolve(), self._font_size)
+            case constants.FontType.BITMAP:
+                self._font = BitmapFont.load(str(font_path.resolve()))
+        self._font_path = font_path
+        self._font_format = font_format
 
     @property
     def font_size(self) -> int:
@@ -139,6 +158,8 @@ class SSD1305:
 
     @font_size.setter
     def font_size(self, size: int) -> None:
+        if self._font_format == constants.FontType.BITMAP:
+            raise ValueError("Cannot set font size for bitmap fonts")
         self._font_size = size
         if self._font_path:
             self._font = ImageFont.truetype(self._font_path.resolve(), self._font_size)
@@ -194,8 +215,14 @@ class SSD1305:
 
     def text(self, string: str, x: int, y: int) -> None:
         """Draw text at the given (x,y) position."""
-        draw = ImageDraw.Draw(self._image)
-        draw.text((x, y), string, font=self.font, fill=constants.Colour.WHITE)
+        match self._font_format:
+            case constants.FontType.TTF | constants.FontType.OTF:
+                draw = ImageDraw.Draw(self._image)
+                draw.text((x, y), string, font=self.font, fill=constants.Colour.WHITE) # type: ignore
+            case constants.FontType.BITMAP:
+                assert isinstance(self._font, BitmapFont)
+                self._font.render_text(self._image, (x, y), string)
+            
         self.show()
 
     def show(self) -> None:
@@ -261,10 +288,13 @@ class SSD1305_128x32(SSD1305):
         i2c_address: int = constants.SSD1305_I2C_ADDRESS,
         external_vcc: bool = False,
         reset_pin: int | None = 4,
+        font_path: pathlib.Path | None = None,
+        font_size: int = 8,
+        font_format: constants.FontType = constants.FontType.TTF,
     ) -> None:
         self._page_offset = 4
         self._column_offset = 4
-        super().__init__(width, height, i2c_bus, i2c_address, external_vcc, reset_pin)
+        super().__init__(width, height, i2c_bus, i2c_address, external_vcc, reset_pin, font_path, font_size, font_format)
 
     def init_display(self) -> None:
         for cmd in (
@@ -315,10 +345,13 @@ class SSD1305_128x64(SSD1305):
         i2c_address: int = constants.SSD1305_I2C_ADDRESS,
         external_vcc: bool = False,
         reset_pin: int | None = None,
+        font_path: pathlib.Path | None = None,
+        font_size: int = 8,
+        font_format: constants.FontType = constants.FontType.TTF,
     ) -> None:
         self._page_offset = 0
         self._column_offset = 4
-        super().__init__(width, height, i2c_bus, i2c_address, external_vcc, reset_pin)
+        super().__init__(width, height, i2c_bus, i2c_address, external_vcc, reset_pin, font_path, font_size, font_format)
 
     def init_display(self) -> None:
         for cmd in ():
@@ -328,7 +361,7 @@ class SSD1305_128x64(SSD1305):
 if __name__ == "__main__":
     from time import sleep
 
-    with SSD1305_128x32() as display:
+    with SSD1305_128x32(font_path=pathlib.Path("adafruit_ssd1305/fonts/small_6x8"), font_format=constants.FontType.BITMAP) as display:
         for i in range(10):
             display.fill(constants.Colour.WHITE)
             sleep(0.5)
@@ -338,5 +371,4 @@ if __name__ == "__main__":
         display.text("Hello, World!", 0, 0)
         display.text("SSD1305 Test", 0, 8)
         display.text("Displaying text", 0, 16)
-        display.text("Goodbye!", 0, 24)
         sleep(5)

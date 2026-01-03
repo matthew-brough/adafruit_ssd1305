@@ -1,9 +1,16 @@
-from enum import IntEnum
+from enum import IntEnum, Enum
 
 
 class Colour(IntEnum):
     BLACK = 0
     WHITE = 1
+
+
+class FontType(Enum):
+    TTF = "ttf"
+    OTF = "otf"
+    BITMAP = "bitmap"
+
 
 
 SSD1305_I2C_ADDRESS = 0x3C
