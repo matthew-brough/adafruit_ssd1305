@@ -59,9 +59,12 @@ class SSD1305:
         self._buffer = bytearray(((self._height // 8) * self._width) + 1)
         self._buffer[0] = 0x40  # Co=0, D/C=1 for data
 
-        if self.reset_pin and GPIO:
+        if self.can_reset():
+            assert self.reset_pin is not None
+            assert GPIO is not None
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.reset_pin, GPIO.OUT)
+            self.reset()
 
         if not self._font_path:
             self._font_path = pathlib.Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
