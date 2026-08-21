@@ -89,17 +89,16 @@ class SSD1305:
         exc_value: BaseException | None,
         traceback: TracebackType | None,
     ) -> bool | None:
-        if self.can_reset():
-            self.reset()
-
-        self.power_off()
-        self._bus.close()
-        if self.can_reset():
-            assert self.reset_pin is not None
-            assert GPIO is not None
-            GPIO.cleanup(self.reset_pin)
-
-        pass
+        try:
+            if self.can_reset():
+                self.reset()
+            self.power_off()
+        finally:
+            self._bus.close()
+            if self.can_reset():
+                assert self.reset_pin is not None
+                assert GPIO is not None
+                GPIO.cleanup(self.reset_pin)
 
     @property
     def width(self) -> int:
@@ -265,20 +264,12 @@ class SSD1305:
 
     def _image_to_buffer(self) -> None:
         """Convert PIL image to buffer."""
-        pixels = self._image.load()
-        if pixels is None:
-            return
-        for x in range(self.width):
-            for page in range(self.pages):
-                byte = 0
-                for bit in range(8):
-                    y = page * 8 + bit
-                    if y >= self.height:
-                        continue
-                    if pixels[x, y]:
-                        byte |= 1 << bit
-                # +1 to skip the 0x40 control byte at buffer[0]
-                self._buffer[x + page * self.width + 1] = byte
+        for page in range(self.pages):
+            band = self._image.crop((0, page * 8, self.width, page * 8 + 8))
+            # ROTATE_270 lands each column in one row, so mode "1" tobytes() packs
+            # it straight into the page's column-major bytes.
+            start = 1 + page * self.width
+            self._buffer[start : start + self.width] = band.transpose(Image.Transpose.ROTATE_270).tobytes()
 
     def power_off(self) -> None:
         """Turn off the display."""
@@ -378,8 +369,7 @@ class SSD1305_128x64(SSD1305):
         )
 
     def init_display(self) -> None:
-        for cmd in ():
-            self.write_command(cmd)
+        raise NotImplementedError("SSD1305_128x64 init sequence is not defined yet")
 
 
 if __name__ == "__main__":
