@@ -32,7 +32,7 @@ version = "0.1.0"
 dynamic = ["dependencies"]
 
 [project.urls]
-"Source" = "https://github.com/artemOP/adafruit_ssd1305"
+"Source" = "https://github.com/matthew-brough/adafruit_ssd1305"
 
 [tool.setuptools.dynamic]
 dependencies = { file = "requirements.txt" }

@@ -15,14 +15,16 @@ A CPython driver for the SSD1305 monochrome OLED display, designed for Raspberry
 
 ## Installation
 
+Not published to PyPI — install from the repository:
+
 ```bash
-pip install adafruit_ssd1305
+pip install git+https://github.com/matthew-brough/adafruit_ssd1305.git
 ```
 
 ### With GPIO Support (Raspberry Pi)
 
 ```bash
-pip install adafruit_ssd1305[gpio]
+pip install 'adafruit_ssd1305[gpio] @ git+https://github.com/matthew-brough/adafruit_ssd1305.git'
 ```
 
 ## Requirements
