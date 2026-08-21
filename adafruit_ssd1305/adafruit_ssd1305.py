@@ -283,11 +283,14 @@ class SSD1305:
             return
         assert self.reset_pin is not None
         self.gpio_write(self.reset_pin, 1)
-        time.sleep(0.010)
+        time.sleep(0.05)
         self.gpio_write(self.reset_pin, 0)
-        time.sleep(0.010)
+        time.sleep(0.05)
         self.gpio_write(self.reset_pin, 1)
-        time.sleep(0.010)
+        # The controller needs to settle before it will accept commands. The
+        # previous 10ms pulse left the panel wedged after an unclean shutdown,
+        # needing a manual reset before the service would come up.
+        time.sleep(0.3)
 
 
 class SSD1305_128x32(SSD1305):
