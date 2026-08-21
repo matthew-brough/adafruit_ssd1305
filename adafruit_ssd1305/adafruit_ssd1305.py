@@ -14,14 +14,16 @@ except (ImportError, RuntimeError):
 
 try:
     from . import constants
-    from .bitmap_font import BitmapFont
+    from .bitmap_font import BitmapFont, list_fonts
 except ImportError:
     import constants
-    from bitmap_font import BitmapFont
+    from bitmap_font import BitmapFont, list_fonts
 
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import Self, Literal
+
+FONT_FOLDER = pathlib.Path(__file__).resolve().parent / "fonts"
 
 
 class SSD1305:
@@ -67,7 +69,7 @@ class SSD1305:
             self.reset()
 
         if not self._font_path:
-            self._font_path = pathlib.Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
+            self._font_path = FONT_FOLDER / "DejaVuSansMono.ttf"
 
         match self._font_format:
             case constants.FontType.TTF | constants.FontType.OTF:
@@ -149,7 +151,14 @@ class SSD1305:
 
     @property
     def font_folder_path(self) -> pathlib.Path:
-        return pathlib.Path(__file__).resolve().parent / "fonts"
+        return FONT_FOLDER
+
+    @staticmethod
+    def available_fonts() -> dict[str, pathlib.Path]:
+        """Map every bundled font name to its path. Names are the allowlist for untrusted input."""
+        fonts = {p.name: p for p in FONT_FOLDER.iterdir() if p.suffix.lower() in (".ttf", ".otf")}
+        fonts.update({name: FONT_FOLDER / name for name in list_fonts(str(FONT_FOLDER))})
+        return fonts
 
     @font.setter
     def font(self, font_path: pathlib.Path) -> None:
